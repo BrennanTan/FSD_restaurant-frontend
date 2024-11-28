@@ -1,4 +1,3 @@
-<!-- Manage reservations(View appointments),(Accept,Decline..),(update apointment details) -->
 <!doctype html>
 <html lang="en">
   <head>
@@ -12,7 +11,6 @@
     <div class="container pt-4">
       <div class="card">
         <div class="card-body">
-
           <div class="row pb-3">
             <div class="col-11">
               <a class="btn btn-primary" href="orders.html">Orders</a> 
@@ -23,10 +21,194 @@
             </div>
           </div>
 
+            <h3>Pending Reservations</h3>
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Time</th>
+                  <th scope="col">Size</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="pendingReservationTable">
+              </tbody>
+            </table>
+
+            <h3>All Reservations</h3>
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Time</th>
+                  <th scope="col">Size</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody id="allReservationTable">
+              </tbody>
+            </table>
         </div>
       </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+
+      async function fetchPendingReservations() {
+        try {
+          const response = await fetch('http://localhost:5000/reservations/getPendingReservations');
+          const data = await response.json();
+
+          const tableBody = document.getElementById('pendingReservationTable');
+
+          if (response.ok && data.length > 0) {
+            tableBody.innerHTML = '';
+
+            data.forEach(item => {
+              const row = `
+                <tr>
+                  <td>${new Date(item.date).toLocaleDateString()}</td>
+                  <td>${item.time}</td>
+                  <td>${item.size}</td>
+                  <td>${item.status}</td>
+                  <td>
+                    <button type="button" class="btn btn-success" onclick="acceptReservation('${item._id}')">Accept</button>
+                    <button type="button" class="btn btn-danger" onclick="declineReservation('${item._id}')">Decline</button>
+                    <button type="button" class="btn btn-primary" onclick="updateReservation('${item._id}')">Update</button>
+                  </td>
+                </tr>`;
+
+                tableBody.innerHTML += row;
+            });
+          } else {
+            tableBody.innerHTML = 
+              `<tr>
+                <td colspan="5" class="text-center">
+                  <div class="alert alert-primary" role="alert">
+                    No pending reservations currently.
+                  </div>
+                </td>
+              </tr>`;
+          }
+        } catch (error) {
+          const tableBody = document.getElementById('pendingReservationTable');
+          tableBody.innerHTML =
+            `<tr>
+                <td colspan="5" class="text-center">
+                  <div class="alert alert-danger" role="alert">
+                    Failed to load pending reservations. Please try again later.
+                  </div>
+                </td>
+              </tr>`;
+          console.error('Error fetching pending reservations:', error);
+        }
+      }
+
+      async function fetchAllReservations() {
+        try {
+          const response = await fetch('http://localhost:5000/reservations/getReservations');
+          const data = await response.json();
+
+          const tableBody = document.getElementById('allReservationTable');
+
+          if (response.ok && data.length > 0) {
+            tableBody.innerHTML = '';
+
+            data.forEach(item => {
+              const row = `
+                <tr>
+                  <td>${new Date(item.date).toLocaleDateString()}</td>
+                  <td>${item.time}</td>
+                  <td>${item.size}</td>
+                  <td>${item.status}</td>
+                </tr>`;
+
+                tableBody.innerHTML += row;
+            });
+          } else {
+            tableBody.innerHTML = 
+              `<tr>
+                <td colspan="5" class="text-center">
+                  <div class="alert alert-primary" role="alert">
+                    No reservations currently.
+                  </div>
+                </td>
+              </tr>`;
+          }
+        } catch (error) {
+          const tableBody = document.getElementById('allReservationTable');
+          tableBody.innerHTML =
+            `<tr>
+                <td colspan="5" class="text-center">
+                  <div class="alert alert-danger" role="alert">
+                    Failed to load reservations. Please try again later.
+                  </div>
+                </td>
+              </tr>`;
+          console.error('Error fetching reservations:', error);
+        }
+      }
+
+      async function acceptReservation(reservationId) {
+        try {
+          const response = await fetch('http://localhost:5000/reservations/updateReservationStatus', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ reservationId, status: 'Accepted' }),
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            alert(result.message);
+            fetchPendingReservations();
+            fetchAllReservations();
+          } else {
+            alert(`Error: ${result.message}`);
+          }
+        } catch (error) {
+          console.error('Error updating reservation status:', error);
+          alert('An unexpected error occurred. Please try again.');
+        }
+      }
+
+      async function declineReservation(reservationId) {
+        try {
+          const response = await fetch('http://localhost:5000/reservations/updateReservationStatus', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ reservationId, status: 'Declined' }),
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            alert(result.message);
+            fetchPendingReservations();
+            fetchAllReservations();
+          } else {
+            alert(`Error: ${result.message}`);
+          }
+        } catch (error) {
+          console.error('Error updating reservation status:', error);
+          alert('An unexpected error occurred. Please try again.');
+        }
+      }
+
+      function updateReservation(reservationId) {
+        window.location.href = `update-reservation.html?reservationId=${reservationId}`;
+      }
+
+      window.onload = () => {
+        fetchPendingReservations();
+        fetchAllReservations();
+      };
+    </script>
   </body>
 </html>

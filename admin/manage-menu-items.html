@@ -173,7 +173,6 @@
 
           if (response.ok) {
             alert('Menu item deleted successfully!');
-            // Reload the menu to reflect the changes
             fetchMenu();
           } else {
             alert(`Failed to delete item: ${result.message}`);
