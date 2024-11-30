@@ -14,15 +14,15 @@
 
           <div class="row pb-3">
             <div class="col-11">
-              <button type="button" class="btn btn-primary">Reservations</button> 
-              <button type="button" class="btn btn-primary">Orders</button>
-              <button type="button" class="btn btn-primary">Orders History</button>
+              <a href="reservations.html" class="btn btn-primary">Reservations</a> 
+              <a href="orders/orders.html" class="btn btn-primary">Orders</a>
+              <a href="orders/orders-history.html" class="btn btn-primary">Orders History</a>
             </div>
             <div class="col-1">
               <button type="button" class="btn btn-secondary">Logout</button>
             </div>
           </div>
-
+          <h3>Menu</h3>
           <div id="menu-container" class="row g-3">
           </div>
 
@@ -51,6 +51,7 @@
                       <p class="card-text">${item.description}</p>
                       <p class="card-text"><strong>Price:</strong> $${item.price.toFixed(2)}</p>
                       <p class="card-text"><strong>Available:</strong> ${item.available ? 'Yes' : 'No'}</p>
+                      <a href="add-to-order.html?itemId=${item._id}" class="btn btn-primary">Add to Order</a>
                     </div>
                   </div>
                 </div>`;

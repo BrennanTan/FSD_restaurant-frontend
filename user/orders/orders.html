@@ -1,16 +1,126 @@
-<!-- Functions like a cart, read session data containing items and qty, allow + or - and confirmation -->
-<!-- Show currently active order (!rejected) Cart on top half, active orders bottom half -->
 <!-- If rejected? Show an alert -->
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bootstrap demo</title>
+    <title>Orders</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
   </head>
   <body>
-    <h1>Hello, world!</h1>
+
+    <div class="container pt-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="row pb-3">
+            <div class="col-11">
+              <a href="../reservations.html" class="btn btn-primary">Reservations</a> 
+              <a href="orders-history.html" class="btn btn-primary">Orders History</a>
+              <a href="../main.html" class="btn btn-primary">Menu</a>
+            </div>
+            <div class="col-1">
+              <button type="button" class="btn btn-secondary">Logout</button>
+            </div>
+          </div>
+
+          <h3>Pending Orders</h3>
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">Item Name</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody id="pendingOrdersTable">
+            </tbody>
+          </table>
+
+          <h3>Active Orders</h3>
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">Item Name</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody id="activeOrdersTable">
+            </tbody>
+          </table>
+
+        </div>
+      </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+      const userId = "6748031bccedeff8badf94d3";
+      async function fetchPendingOrders() {
+        try {
+          const response = await fetch(`http://localhost:5000/orders/getPendingOrder/${userId}`);
+          const data = await response.json();
+          populateTable('pendingOrdersTable', data);
+        } catch (error) {
+          showError('pendingOrdersTable', 'Failed to load pending orders.');
+          console.error('Error fetching pending orders:', error);
+        }
+      }
+
+      async function fetchActiveOrders() {
+        try {
+          const response = await fetch(`http://localhost:5000/orders/getActiveOrder/${userId}`);
+          const data = await response.json();
+          populateTable('activeOrdersTable', data);
+        } catch (error) {
+          showError('activeOrdersTable', 'Failed to load active orders.');
+          console.error('Error fetching active orders:', error);
+        }
+      }
+
+      function populateTable(tableId, orders) {
+        console.log(orders);
+        const tableBody = document.getElementById(tableId);
+
+        if (orders && orders.items && orders.items.length > 0) {
+          tableBody.innerHTML = '';
+
+          orders.items.forEach(item => {
+            const row = `
+              <tr>
+                <td>${item.itemName}</td>
+                <td>${item.quantity}</td>
+                <td>${orders.status}</td>
+              </tr>`;
+            tableBody.innerHTML += row;
+          });
+        } else {
+          showEmptyMessage(tableId, 'No orders found.');
+        }
+      }
+
+      function showError(tableId, message) {
+        const tableBody = document.getElementById(tableId);
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="4" class="text-center">
+              <div class="alert alert-danger">${message}</div>
+            </td>
+          </tr>`;
+      }
+
+      function showEmptyMessage(tableId, message) {
+        const tableBody = document.getElementById(tableId);
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="4" class="text-center">
+              <div class="alert alert-primary">${message}</div>
+            </td>
+          </tr>`;
+      }
+
+      fetchPendingOrders();
+      fetchActiveOrders();
+    </script>
   </body>
 </html>
