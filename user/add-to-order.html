@@ -22,6 +22,17 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script>
+      function checkSession(){
+        if (!sessionStorage.getItem('userId')) {
+          window.location.replace('../index.html');
+        }
+      }
+
+      function logout(){
+        sessionStorage.clear();
+        window.location.replace('../index.html');
+      }
+
       async function fetchMenuItem() {
         const urlParams = new URLSearchParams(window.location.search);
         const itemId = urlParams.get('itemId');
@@ -51,7 +62,7 @@
 
             document.getElementById('addToOrderButton').addEventListener('click', async () => {
               const quantity = document.getElementById('orderQuantity').value;
-              const userId = "6748031bccedeff8badf94d3";
+              const userId = sessionStorage.getItem('userId');
               const itemName = data.name;
 
               const isConfirmed = window.confirm(`Do you want to add ${quantity} of "${itemName}" to your order?`);
@@ -99,7 +110,10 @@
         }
       }
 
-      window.onload = fetchMenuItem;
+      window.onload = () =>{
+        checkSession(),
+        fetchMenuItem()
+      }; 
     </script>
   </body>
 </html>
