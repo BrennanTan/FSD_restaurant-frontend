@@ -36,6 +36,7 @@
       async function fetchMenuItem() {
         const urlParams = new URLSearchParams(window.location.search);
         const itemId = urlParams.get('itemId');
+
         try {
           const response = await fetch(`http://localhost:5000/menu/getMenuItem/${itemId}`);
           const data = await response.json();
@@ -43,6 +44,13 @@
           const container = document.getElementById('menu-container');
 
           if (response.ok && data) {
+
+            if (!data.available) {
+              alert(`Sorry, the item "${data.name}" is currently unavailable.`);
+              window.location.href = 'main.html';
+              return;
+            }
+
             container.innerHTML = `
                 <div class="col-md-6 pt-3">
                   <div class="card h-100">
@@ -50,7 +58,7 @@
                       <h5 class="card-title">${data.name}</h5>
                       <h6 class="card-subtitle mb-2 text-muted">${data.category}</h6>
                       <p class="card-text">${data.description}</p>
-                      <p class="card-text"><strong>Price:</strong> $${data.price.toFixed(2)}</p>
+                      <p class="card-text"><strong>Price:</strong> RM ${data.price.toFixed(2)}</p>
                       <p class="card-text"><strong>Available:</strong> ${data.available ? 'Yes' : 'No'}</p>
                       <hr>
                       <label for="orderQuantity" class="form-label">Quantity: </label>
@@ -70,7 +78,6 @@
                 await addToOrder({ items: [{ itemName, quantity }], userId });
               }
             });
-
           } else {
             container.innerHTML = `
               <div class="alert alert-warning text-center" role="alert">
