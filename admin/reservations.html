@@ -55,8 +55,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script>
-      const socket = new WebSocket('ws://localhost:5000');
-
       function checkSession(){
         if (!sessionStorage.getItem('sessionStatus')) {
           window.location.replace('admin-login.html');
@@ -223,38 +221,49 @@
         window.location.href = `update-reservation.html?reservationId=${reservationId}`;
       }
 
-      socket.addEventListener('message', (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          if (message.type === 'New Reservation Created') {
-              fetchPendingReservations()
-          }
-        } catch (error) {
-          console.error('Error processing WebSocket message:', error);
-        }
-      });
-
-      socket.addEventListener('message', (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          if (message.type === 'User Cancelled Reservation') {
-              fetchPendingReservations();
-              fetchAllReservations();
-              alert(message.message);
-          }
-        } catch (error) {
-          console.error('Error processing WebSocket message:', error);
-        }
-      });
-
-      socket.addEventListener('error', (error) => {
-          console.error('WebSocket error:', error);
-      });
-
       window.onload = () => {
-        checkSession(),
-        fetchPendingReservations(),
-        fetchAllReservations()
+        checkSession();
+        fetchPendingReservations();
+        fetchAllReservations();
+
+        const socket = new WebSocket('ws://localhost:5000');
+
+        socket.addEventListener('open', () => {
+          socket.send(JSON.stringify({
+            type: 'register',
+            userId: sessionStorage.getItem('userId'), 
+            role: 'ADMIN'
+          }));
+        });
+
+        socket.addEventListener('message', (event) => {
+          try {
+            const message = JSON.parse(event.data);
+            if (message.type === 'New Reservation Created') {
+                fetchPendingReservations()
+            }
+          } catch (error) {
+            console.error('Error processing WebSocket message:', error);
+          }
+        });
+
+        socket.addEventListener('message', (event) => {
+          try {
+            const message = JSON.parse(event.data);
+            if (message.type === 'User Cancelled Reservation') {
+                fetchPendingReservations();
+                fetchAllReservations();
+                alert(message.message);
+            }
+          } catch (error) {
+            console.error('Error processing WebSocket message:', error);
+          }
+        });
+
+        socket.addEventListener('error', (error) => {
+            console.error('WebSocket error:', error);
+        });
+
       };
     </script>
   </body>
