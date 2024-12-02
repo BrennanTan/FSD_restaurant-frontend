@@ -50,7 +50,8 @@
             alert(result.message);
             document.getElementById('loginAdmin').reset();
             sessionStorage.setItem("sessionStatus", "ACTIVE");
-            window.location.replace('admin/manage-menu-items.html');
+            sessionStorage.setItem("userId", result.userId);
+            window.location.replace('manage-menu-items.html');
           } else {
             alert(`Error: ${result.message}`);
             document.getElementById('loginAdmin').reset();
