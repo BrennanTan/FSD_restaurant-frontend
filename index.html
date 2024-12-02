@@ -3,17 +3,16 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Register</title>
+    <title>Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
   </head>
   <body>
-
     <div class="container pt-4">
       <div class="card">
         <div class="card-body">
 
-          <h3>Register</h3>
-          <form id="registerUser">
+          <h3>Login</h3>
+          <form id="loginUser">
             <div class="mb-3">
               <label for="exampleInputEmail1" class="form-label">Username</label>
               <input type="text" class="form-control" id="usernameInput" required>
@@ -23,7 +22,7 @@
               <input type="password" class="form-control" id="passwordInput" required>
             </div>
             <div class="mb-3">
-              <a href="index.html">Already have an account? Login here</a>
+              <a href="register.html">Don't have an account? Register here</a>
             </div>
             <button type="submit" class="btn btn-primary">Submit</button>
           </form>
@@ -31,17 +30,17 @@
         </div>
       </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script>
-      document.getElementById('registerUser').addEventListener('submit', async (event) => {
+      const socket = new WebSocket('ws://localhost:5000');
+      document.getElementById('loginUser').addEventListener('submit', async (event) => {
         event.preventDefault();
 
         const username = document.getElementById('usernameInput').value;
         const password = document.getElementById('passwordInput').value;
 
         try {
-          const response = await fetch('http://localhost:5000/users/register', {
+          const response = await fetch('http://localhost:5000/users/login', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -51,20 +50,34 @@
 
           const result = await response.json();
 
-          if (response.ok) {
+          if (response.ok) {     
+            sessionStorage.setItem("userId", result.userId);
+             
+            socket.addEventListener('open', () => {
+              socket.send(JSON.stringify({
+                      type: 'register',
+                      userId: sessionStorage.getItem('userId'), 
+                      role: 'USER'
+                  }));
+            });
+            socket.addEventListener('error', (error) => {
+              console.error('WebSocket error:', error);
+            });
+
             alert(result.message);
-            document.getElementById('registerUser').reset();
-            window.location.replace('index.html');
+            document.getElementById('loginUser').reset();
+            window.location.replace('user/main.html');
           } else {
             alert(`Error: ${result.message}`);
-            document.getElementById('registerUser').reset();
+            document.getElementById('loginUser').reset();
           }
         } catch (error) {
           console.error('Error registering:', error);
           alert('An unexpected error occurred. Please try again.');
-          document.getElementById('registerUser').reset();
+          document.getElementById('loginUser').reset();
         }
       });
+      
     </script>
   </body>
 </html>
