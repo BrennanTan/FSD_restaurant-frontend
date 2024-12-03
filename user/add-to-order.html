@@ -108,6 +108,7 @@
 
           if (response.ok) {
             alert('Order placed successfully!');
+            window.location.replace('main.html');
           } else {
             alert(`Error: ${result.message}`);
           }
